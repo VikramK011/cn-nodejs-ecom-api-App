@@ -1,0 +1,48 @@
+//To Get Average rating
+
+db.products.aggregate([
+  //1. create comment for rating
+  {
+    $unwind: $"ratings"
+  },
+  //group rating per product and get average
+  {
+    $group:{
+      _id:"$name",
+      averageRating:{$avg:"$ratings:rating"}
+    }
+
+  }
+])
+
+//Q2. Number of rating against product id
+
+db.products.aggregate([
+  //1. Project name of product and count of rating
+  {
+   $project:{name:1, countOfRating:{
+    $cond:{ if:{$isArray: "$rating"}
+    ,then:{$size: "$ratings"}, else:0} }}
+ }
+])
+
+//Q2. sorting and Finding heighest counts. of rating product
+
+db.products.aggregate([
+  //1. Project name of product and count of rating
+  {
+   $project:{name:1, countOfRating:{
+    $cond:{ if:{$isArray: "$rating"}
+    ,then:{$size: "$ratings"}, else:0} }}
+ },
+ {
+  //2. sort the collection
+    $sort: {countOfRating:-1}
+ },
+
+ {
+  //3. Limit to just 1 item in result
+    $limit:1
+
+ }
+])
